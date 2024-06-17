@@ -1,35 +1,25 @@
 import requests
-import json
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
+from pymongo import MongoClient
 
 
 class taidiDetail:
     def __init__(self):
-        data = {"pageSize": 1765}
-        jobList_url = "https://www.5iai.com/api/enterprise/job/public/es"
-        r = requests.get(jobList_url, params=data).json()
-        self.content = r.get("data").get("content")
+        self.jobList_url = "https://www.5iai.com/api/enterprise/job/public/es"
         self.jobDetail_url = (
             "https://www.5iai.com/api/enterprise/job/public"  # 详情页数据接口
         )
-
-        uri = "mongodb://hzhlove1314:0705@childb.zq9crau.mongodb.net/?retryWrites=true&w=majority&appName=ChilDB"
-        # Create a new client and connect to the server
-        client = MongoClient(uri, server_api=ServerApi("1"))
-        # Send a ping to confirm a successful connection
-        try:
-            client.admin.command("ping")
-            print("Pinged your deployment. You successfully connected to MongoDB!")
-        except Exception as e:
-            print(e)
+        myClient = MongoClient("mongodb://23.158.104.186/32:27017")
 
     # end def
     def getDetailID(self):
         detailIdList = []
-        for i in range(len(self.content)):
-            detailId = self.content[i].get("id")  # 页面详情id
-            detailIdList.append(detailId)
+        for j in range(0, 18):
+            data = {"pageSize": 10, "pageNum": j}
+            r = requests.get(self.jobList_url, params=data).json()
+            content = r.get("data").get("content")
+            for i in range(len(content)):
+                detailId = content[i].get("id")  # 页面详情id
+                detailIdList.append(detailId)
         return detailIdList
 
     # end def
@@ -84,17 +74,25 @@ class taidiDetail:
             )  # 公司人数
             # print(obj)
             detailInfo.append(obj)
+        return detailInfo
 
     # end def
-    def save():
-        """
-        Purpose:
-        """
+    def save(self, detailInfo):
+        db = self.client.ChilDB
+        coll = db.taidi
+        coll.insert_test_Info(detailInfo)
+        print("保存成功")
+        result = coll.find()
+        for doc in result:
+            print(doc)
+        # end def
 
-    # end def
+    def run(self):
+        detailIdList = self.getDetailID()
+        detailInfo = self.getDetailInfo(detailIdList)
+        self.save(detailInfo)
+        # end def
 
 
 taidi = taidiDetail()
-taidi.__init__()
-# idList = taidi.getDetailID()
-# taidi.getDetailInfo(idList)
+taidi.run()
