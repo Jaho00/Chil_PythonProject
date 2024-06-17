@@ -23,11 +23,12 @@ for i in range(len(content)):
     skillsList = detailR.get("data").get("skillsList")  # 技能要求
     for j in range(len(skillsList)):
         if j == 0:
-            labelName = skillsList[j].get("labelName")
+            labelName = str(skillsList[j].get("labelName"))
         else:
-            labelName = labelName + skillsList[j].get("labelName")
+            labelName = labelName + "、" + str(skillsList[j].get("labelName"))
 
     educationalRequirements = content[i].get("educationalRequirements")  # 学历要求码
+    # 2 大专 1 技工 3 本科
     match (educationalRequirements):  # 学历
         case 1:
             educationName = "技工"
@@ -43,5 +44,4 @@ for i in range(len(content)):
     companyType = content[i].get("enterpriseExtInfo").get("econKind")  # 单位性质
     industry = content[i].get("enterpriseExtInfo").get("industry")  # 所属行业（待优化）
     personScope = content[i].get("enterpriseExtInfo").get("personScope")  # 公司人数
-    print(company)
-# 2 大专 1 技工 3 本科
+    print(labelName)
