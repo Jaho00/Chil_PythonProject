@@ -1,6 +1,7 @@
 import requests
 from pymongo import MongoClient
 from bs4 import BeautifulSoup
+import re
 
 
 class taidiDetail:
@@ -11,7 +12,7 @@ class taidiDetail:
         )
 
         uri = "mongodb+srv://Chil:0705@childb.zq9crau.mongodb.net/?retryWrites=true&w=majority&appName=ChilDB"
-        self.client = MongoClient(uri)
+        # self.client = MongoClient(uri)
 
     # end def
     def getDetailID(self):
@@ -46,12 +47,24 @@ class taidiDetail:
             obj["_id"] = detailIdList[i]  # 详情id
             obj["公司名称"] = detailData.get("enterpriseName")  # 公司名称
             obj["招聘人数"] = detailData.get("count")  # 招聘人数
-            obj["职位描述"] = detailData.get("jobRequiredments")  # 职位描述（待优化）.
-            jRhtml = BeautifulSoup(obj["职位描述"], "html.parser")
 
-            print(jRhtml.find_all(name="p"))  # 以标签名为p查询元素
+            jRhtml = BeautifulSoup(detailData.get("jobRequiredments"), "html.parser")
+            jRhtmlList = jRhtml.find_all(name="p")  # 获取每一个p标签
+            jobRequiredments = ""
+            # 循环用get_text（）获取标签中的文字
+            for n in range(len(jRhtmlList)):
+                if n == 0:
+                    jobRequiredments = jRhtmlList[n].get_text()
+                else:
+                    jobRequiredments = jobRequiredments + jRhtmlList[n].get_text()
+            obj["职位描述"] = jobRequiredments  # 职位描述
 
-            obj["职位福利"] = detailData.get("welfare")  # 职位福利(待优化)
+            # obj["职位福利"] =
+            welfareStrlist = detailData.get("welfare").split(" ")  # 职位福利(待优化)
+            print(f"==>> welfareStrlist: {welfareStrlist}")
+            for m in welfareStrlist:
+                print(f"==>> : {re.findall(r'[\u4e00-\u9fa5]', m)}")
+
             obj["发布时间"] = detailData.get("publishTime")  # 发布时间
             obj["截止时间"] = detailData.get("deadline")  # 截止时间
             skillsList = detailData.get("skillsList")  # 技能要求
@@ -103,7 +116,7 @@ class taidiDetail:
     def save(self, detailInfo):
         database = self.client.taidiInfo  # 数据库名称
         coll = database.detailInfo
-        # print(coll)
+        print(coll)
         # coll.insert_many(detailInfo)
         # print(f"==>> detailInfo: {detailInfo}")
         # print("保存成功")
@@ -117,7 +130,7 @@ class taidiDetail:
         obj = self.getDetailID()
         detailInfo = self.getDetailInfo(obj)
         # print(detailInfo)
-        self.save(detailInfo)
+        # self.save(detailInfo)
         # end def
 
 
