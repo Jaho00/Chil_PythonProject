@@ -88,7 +88,6 @@ class taidiDetail:
                 obj["学历要求"] = "硕士"
             elif educationalRequirements == 5:
                 obj["学历要求"] = "博士"
-            # end match
             obj["最高薪资"] = content[i].get("maximumWage")  # 最高薪资
             obj["最低薪资"] = content[i].get("minimumWage")  # 最低薪资
             obj["经验要求"] = content[i].get("exp")  # 经验要求
