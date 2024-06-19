@@ -12,7 +12,7 @@ class taidiDetail:
         )
 
         uri = "mongodb+srv://Chil:0705@childb.zq9crau.mongodb.net/?retryWrites=true&w=majority&appName=ChilDB"
-        # self.client = MongoClient(uri)
+        self.client = MongoClient(uri)
 
     # end def
     def getDetailID(self):
@@ -44,7 +44,7 @@ class taidiDetail:
             detailData = detailR.get("data")
 
             obj = {}
-            obj["_id"] = detailIdList[i]  # 详情id
+            # obj["_id"] = detailIdList[i]  # 详情id
             obj["公司名称"] = detailData.get("enterpriseName")  # 公司名称
             obj["招聘人数"] = detailData.get("count")  # 招聘人数
 
@@ -59,11 +59,8 @@ class taidiDetail:
                     jobRequiredments = jobRequiredments + jRhtmlList[n].get_text()
             obj["职位描述"] = jobRequiredments  # 职位描述
 
-            # obj["职位福利"] =
-            welfareStrlist = detailData.get("welfare").split(" ")  # 职位福利(待优化)
-            print(f"==>> welfareStrlist: {welfareStrlist}")
-            for m in welfareStrlist:
-                print(f"==>> : {re.findall(r'[\u4e00-\u9fa5]', m)}")
+            welfareStrlist = detailData.get("welfare").split(",")
+            obj["职位福利"] = self.dataProcessing(welfareStrlist, ",")  # 职位福利
 
             obj["发布时间"] = detailData.get("publishTime")  # 发布时间
             obj["截止时间"] = detailData.get("deadline")  # 截止时间
@@ -80,19 +77,18 @@ class taidiDetail:
                 "educationalRequirements"
             )  # 学历要求码
             # 2 大专 1 技工 3 本科
-            match (educationalRequirements):  # 学历要求
-                case 0:
-                    obj["学历要求"] = "不限"
-                case 1:
-                    obj["学历要求"] = "技工"
-                case 2:
-                    obj["学历要求"] = "大专"
-                case 3:
-                    obj["学历要求"] = "本科"
-                case 4:
-                    obj["学历要求"] = "硕士"
-                case 5:
-                    obj["学历要求"] = "博士"
+            if educationalRequirements == 0:  # 学历要求
+                obj["学历要求"] = "不限"
+            elif educationalRequirements == 1:
+                obj["学历要求"] = "技工"
+            elif educationalRequirements == 2:
+                obj["学历要求"] = "大专"
+            elif educationalRequirements == 3:
+                obj["学历要求"] = "本科"
+            elif educationalRequirements == 4:
+                obj["学历要求"] = "硕士"
+            elif educationalRequirements == 5:
+                obj["学历要求"] = "博士"
             # end match
             obj["最高薪资"] = content[i].get("maximumWage")  # 最高薪资
             obj["最低薪资"] = content[i].get("minimumWage")  # 最低薪资
@@ -101,9 +97,12 @@ class taidiDetail:
             obj["单位性质"] = (
                 content[i].get("enterpriseExtInfo").get("econKind")
             )  # 单位性质
-            obj["所属行业"] = (
-                content[i].get("enterpriseExtInfo").get("industry")
-            )  # 所属行业（待优化）
+
+            industryList = (
+                content[i].get("enterpriseExtInfo").get("industry").split(",")
+            )
+            obj["所属行业"] = self.dataProcessing(industryList, "/")  # 所属行业
+
             obj["公司人数"] = (
                 content[i].get("enterpriseExtInfo").get("personScope")
             )  # 公司人数
@@ -113,24 +112,37 @@ class taidiDetail:
         return detailInfo
 
     # end def
+
+    # 封装数据处理
+    def dataProcessing(self, dataList, separator):
+        data = ""
+        for m in dataList:
+            list = re.findall(r"[\u4e00-\u9fa5]", m)
+            str = "".join(list)
+            str1 = ""
+            if data != "" and separator == ",":
+                str1 = ","
+            elif data != "" and separator == "/":
+                str1 = "/"
+            data = data + str1 + str
+        return data
+
+    # end def
     def save(self, detailInfo):
         database = self.client.taidiInfo  # 数据库名称
         coll = database.detailInfo
-        print(coll)
-        # coll.insert_many(detailInfo)
-        # print(f"==>> detailInfo: {detailInfo}")
-        # print("保存成功")
-        # results = database.find({})
-        # for result in results:
-        #     print(result)
+        coll.insert_many(detailInfo)
+        print("保存成功")
+        results = coll.find()
+        for result in results:
+            print(result)
 
         # end def
 
     def run(self):
         obj = self.getDetailID()
         detailInfo = self.getDetailInfo(obj)
-        # print(detailInfo)
-        # self.save(detailInfo)
+        self.save(detailInfo)
         # end def
 
 
