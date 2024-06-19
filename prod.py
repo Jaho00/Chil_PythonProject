@@ -76,7 +76,6 @@ class taidiDetail:
             educationalRequirements = content[i].get(
                 "educationalRequirements"
             )  # 学历要求码
-            # 2 大专 1 技工 3 本科
             if educationalRequirements == 0:  # 学历要求
                 obj["学历要求"] = "不限"
             elif educationalRequirements == 1:
