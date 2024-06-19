@@ -143,7 +143,7 @@ class taidiDetail:
     # end def
     def save(self, detailInfo):
         database = self.client.taidiInfo  # 数据库名称
-        coll = database.detailInfo1
+        coll = database.detailInfo
         coll.insert_many(detailInfo)
         print("保存成功")
         results = coll.find()
