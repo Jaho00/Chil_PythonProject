@@ -11,9 +11,6 @@ class taidiDetail:
             "https://www.5iai.com/api/enterprise/job/public"  # 详情页数据接口
         )
 
-        uri = "mongodb+srv://Chil:0705@childb.zq9crau.mongodb.net/?retryWrites=true&w=majority&appName=ChilDB"
-        self.client = MongoClient(uri)
-
     # end def
     def getDetailID(self):
         detailIdList = []
@@ -119,9 +116,10 @@ class taidiDetail:
 
             obj["截止时间"] = detailData.get("deadline")  # 截止时间
 
-            # print(obj)
+            obj["序号"] = i + 1
 
             detailInfo.append(obj)
+        print(detailInfo)
         return detailInfo
 
     # end def
@@ -141,21 +139,10 @@ class taidiDetail:
         return data
 
     # end def
-    def save(self, detailInfo):
-        database = self.client.taidiInfo  # 数据库名称
-        coll = database.detailInfo
-        coll.insert_many(detailInfo)
-        print("保存成功")
-        results = coll.find()
-        for result in results:
-            print(result)
-
-        # end def
 
     def run(self):
         obj = self.getDetailID()
-        detailInfo = self.getDetailInfo(obj)
-        self.save(detailInfo)
+        self.getDetailInfo(obj)
         # end def
 
 
